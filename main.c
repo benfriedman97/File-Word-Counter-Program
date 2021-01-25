@@ -2,9 +2,9 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
-#include "hash_table.h"
-#include "linked_list.h"
 #include <vld.h>
+#include "hash_table.h"
+
 
 // gets rid of uppercase and any non alphabetic characters
 char* modifyWord(char* word);
