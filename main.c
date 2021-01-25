@@ -6,7 +6,7 @@
 #include "linked_list.h"
 #include <vld.h>
 
-// gets rid of any punctation and uppercase letters
+// gets rid of uppercase and any non alphabetic characters
 char* modifyWord(char* word);
 
 int main(int argc, char** argv) {
@@ -14,9 +14,8 @@ int main(int argc, char** argv) {
 	HASH_TABLE hTable = ht_create(1000);
 
 	FILE* fpIn;
-	fopen_s(&fpIn, "test.txt", "r");
-	if (fpIn == NULL) {
-		printf("Failed to open file\n");
+	if (fopen_s(&fpIn, "test.txt", "r") != 0) {
+		printf("failed to open file\n");
 		exit(1);
 	}
 	
@@ -27,11 +26,13 @@ int main(int argc, char** argv) {
 	while (fscanf_s(fpIn, "%s", word, 50) != EOF) {
 		numberOfWords++;
 		modifyWord(word);
-		if (ht_key_exists(hTable, word, &index, &data)) {
-			ht_update_elemment(hTable, word, index, data + 1);
-		}
-		else {
-			ht_insert(hTable, word, 1);
+		if (strcmp(word, "")) {
+			if (ht_key_exists(hTable, word, &index, &data)) {
+				ht_update_element(hTable, word, index, data + 1);
+			}
+			else {
+				ht_insert(hTable, word, 1);
+			}
 		}
 	}
 
@@ -42,15 +43,31 @@ int main(int argc, char** argv) {
 	printf("\nNumber of words: %d\n\n", numberOfWords);
 	ht_destroy(&hTable);
 	list_destroy(&list);
-
 	return 0;
 }
 
 char* modifyWord(char* word) {
+	// edge case for standalone punctuation (? : ; etc.)
+	if (strlen(word) == 1 & !isalpha(word[0])) {
+		word[0] = '\0';
+		return word;
+	}
+
+	if (!isalpha(word[0])) {
+		unsigned wordLen = strlen(word);
+		for (unsigned i = 0; i < wordLen; i++) {
+			word[i] = word[i + 1];
+		}
+	}
 	unsigned lastCharIndex = strlen(word) - 1;
-	if (ispunct(word[lastCharIndex])) {
+	
+	if (lastCharIndex > 0 && !isalpha(word[lastCharIndex - 1])) {
+		word[lastCharIndex - 1] = '\0';
+	}
+	else if (!isalpha(word[lastCharIndex])) {
 		word[lastCharIndex] = '\0';
 	}
+
 	for (char* p = word; *p; p++) {
 		if (*p >= 65 && *p <= 90)
 			*p += 32;
